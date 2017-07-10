@@ -42,7 +42,24 @@
  */
 package org.eclipse.jgit.api;
 
-import static org.eclipse.jgit.lib.Constants.R_TAGS;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.InvalidPatternException;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.ignore.internal.IMatcher;
+import org.eclipse.jgit.ignore.internal.PathMatcher;
+import org.eclipse.jgit.internal.JGitText;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectIdRef;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevFlag;
+import org.eclipse.jgit.revwalk.RevFlagSet;
+import org.eclipse.jgit.revwalk.RevWalk;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -55,23 +72,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.InvalidPatternException;
-import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.ignore.internal.IMatcher;
-import org.eclipse.jgit.ignore.internal.PathMatcher;
-import org.eclipse.jgit.internal.JGitText;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevFlag;
-import org.eclipse.jgit.revwalk.RevFlagSet;
-import org.eclipse.jgit.revwalk.RevWalk;
+import static org.eclipse.jgit.lib.Constants.R_TAGS;
 
 /**
  * Given a commit, show the most recent tag that is reachable from a commit.
@@ -249,6 +250,8 @@ public class DescribeCommand extends GitCommand<String> {
 
 			Collection<Ref> tagList = repo.getRefDatabase().getRefs(R_TAGS).values();
 			Map<ObjectId, List<Ref>> tags = tagList.stream()
+					.filter(ref -> !ref.isSymbolic())
+					.filter(ref -> !(ref instanceof ObjectIdRef.PeeledNonTag))
 					.collect(Collectors.groupingBy(this::getObjectIdFromRef));
 
 			// combined flags of all the candidate instances
