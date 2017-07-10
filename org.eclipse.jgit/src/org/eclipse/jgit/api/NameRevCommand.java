@@ -43,13 +43,6 @@
 
 package org.eclipse.jgit.api;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -64,6 +57,13 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Command to find human-readable names of revisions.
@@ -277,7 +277,7 @@ public class NameRevCommand extends GitCommand<Map<ObjectId, String>> {
 		if (refs == null)
 			refs = new ArrayList<>();
 		try {
-			for (Ref ref : repo.getRefDatabase().getRefs(Constants.R_TAGS).values()) {
+			for (Ref ref : repo.getTags().values()) {
 				ObjectId id = ref.getObjectId();
 				if (id != null && (walk.parseAny(id) instanceof RevTag))
 					addRef(ref);
